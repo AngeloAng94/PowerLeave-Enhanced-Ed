@@ -116,7 +116,7 @@ export default function RegisterPage() {
         </button>
 
         <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: 'var(--muted-foreground)' }}>
-          Hai già un account? <a href="#/login" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 500 }}>Accedi</a>
+          Hai già un account? <Link to="/login" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 500 }}>Accedi</Link>
         </p>
       </div>
       </div>
