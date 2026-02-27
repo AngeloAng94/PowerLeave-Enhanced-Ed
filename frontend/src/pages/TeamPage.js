@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import api from '../lib/api';
 import { NotificationService } from '../context/NotificationContext';
+import { Icons } from '../components/Icons';
 
 export default function TeamPage({ user, onRefresh }) {
   const [team, setTeam] = useState([]);
   const [showInvite, setShowInvite] = useState(false);
   const [inviteForm, setInviteForm] = useState({ email: '', name: '', role: 'user' });
+  const [inviteResult, setInviteResult] = useState(null); // { name, email, temp_password }
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     loadTeam();
@@ -21,8 +24,13 @@ export default function TeamPage({ user, onRefresh }) {
   const handleInvite = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/api/team/invite', inviteForm);
-      NotificationService.success('Membro invitato', `${inviteForm.name} è stato aggiunto al team.`);
+      const result = await api.post('/api/team/invite', inviteForm);
+      // Show temp password modal
+      setInviteResult({
+        name: inviteForm.name,
+        email: inviteForm.email,
+        temp_password: result.temp_password
+      });
       setInviteForm({ email: '', name: '', role: 'user' });
       setShowInvite(false);
       loadTeam();
@@ -30,6 +38,17 @@ export default function TeamPage({ user, onRefresh }) {
     } catch (err) {
       NotificationService.error('Errore', err.message);
     }
+  };
+
+  const handleCopyPassword = () => {
+    navigator.clipboard.writeText(inviteResult.temp_password);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const closeInviteResult = () => {
+    setInviteResult(null);
+    setCopied(false);
   };
 
   const handleRemove = async (userId, name) => {
@@ -52,6 +71,97 @@ export default function TeamPage({ user, onRefresh }) {
 
   return (
     <div data-testid="team-page">
+      {/* Temp Password Result Modal */}
+      {inviteResult && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', zIndex: 100, padding: '20px',
+        }} onClick={closeInviteResult}>
+          <div data-testid="invite-result-modal" style={{
+            background: 'var(--card)', borderRadius: '16px', padding: '28px',
+            width: '100%', maxWidth: '420px', border: '1px solid var(--border)',
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <div style={{
+                width: '48px', height: '48px', borderRadius: '50%',
+                background: 'rgba(34, 197, 94, 0.1)', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px',
+              }}>
+                {Icons.checkCircle}
+              </div>
+              <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--foreground)' }}>
+                Utente Invitato!
+              </h3>
+              <p style={{ fontSize: '13px', color: 'var(--muted-foreground)', marginTop: '4px' }}>
+                {inviteResult.name} ({inviteResult.email})
+              </p>
+            </div>
+
+            <div style={{
+              padding: '16px', borderRadius: '10px',
+              background: 'var(--muted)', marginBottom: '16px',
+            }}>
+              <label style={{
+                display: 'block', fontSize: '12px', fontWeight: 600,
+                color: 'var(--muted-foreground)', marginBottom: '8px',
+              }}>
+                PASSWORD TEMPORANEA
+              </label>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <input
+                  data-testid="temp-password-display"
+                  type="text"
+                  readOnly
+                  value={inviteResult.temp_password}
+                  style={{
+                    flex: 1, padding: '10px 12px', borderRadius: '8px',
+                    border: '1px solid var(--border)', background: 'var(--background)',
+                    color: 'var(--foreground)', fontSize: '16px', fontFamily: 'monospace',
+                    fontWeight: 600,
+                  }}
+                />
+                <button
+                  data-testid="copy-password-btn"
+                  onClick={handleCopyPassword}
+                  style={{
+                    padding: '10px 14px', borderRadius: '8px', border: 'none',
+                    background: copied ? '#22C55E' : 'var(--primary)',
+                    color: 'white', cursor: 'pointer', fontSize: '13px',
+                    fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px',
+                    transition: 'background 0.2s',
+                  }}
+                >
+                  {copied ? 'Copiata!' : 'Copia'}
+                </button>
+              </div>
+            </div>
+
+            <div style={{
+              padding: '12px', borderRadius: '8px',
+              background: 'rgba(59, 130, 246, 0.1)',
+              border: '1px solid rgba(59, 130, 246, 0.2)',
+              fontSize: '12px', color: 'var(--foreground)', lineHeight: 1.5,
+            }}>
+              <strong>Comunica questa password</strong> all'utente. Al primo accesso dovrà impostare una nuova password sicura.
+            </div>
+
+            <button
+              data-testid="close-invite-result"
+              onClick={closeInviteResult}
+              style={{
+                width: '100%', marginTop: '16px', padding: '12px',
+                borderRadius: '8px', border: '1px solid var(--border)',
+                background: 'transparent', color: 'var(--foreground)',
+                cursor: 'pointer', fontSize: '14px', fontWeight: 500,
+              }}
+            >
+              Chiudi
+            </button>
+          </div>
+        </div>
+      )}
+
       {user?.role === 'admin' && (
         <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
           <button data-testid="invite-btn" onClick={() => setShowInvite(!showInvite)} style={{
