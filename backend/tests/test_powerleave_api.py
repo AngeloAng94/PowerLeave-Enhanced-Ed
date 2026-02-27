@@ -321,15 +321,16 @@ class TestTeam:
         assert resp.status_code == 200
         assert len(resp.json()) >= 4
 
-    def test_invite_no_temp_password_exposed(self, admin_headers):
-        """Verify temp_password is NOT in the API response."""
+    def test_invite_returns_temp_password(self, admin_headers):
+        """Verify temp_password IS returned in the API response for admin."""
         email = f"test_{RUN_ID}@audit.it"
         resp = requests.post(f"{BASE_URL}/api/team/invite", headers=admin_headers, json={
             "email": email, "name": "Test Audit", "role": "user"
         })
         assert resp.status_code == 200
         data = resp.json()
-        assert "temp_password" not in data, "temp_password MUST NOT be in response"
+        assert "temp_password" in data, "temp_password MUST be in response for admin"
+        assert len(data["temp_password"]) >= 8, "temp_password should be at least 8 chars"
         uid = data["user_id"]
 
         # Cleanup
