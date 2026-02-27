@@ -500,3 +500,42 @@ class TestDateValidation:
         })
         assert resp.status_code == 422
         assert "2 anni" in resp.json().get("detail", "")
+
+
+class TestChangePassword:
+    """Test change password flow for invited users"""
+    
+    def test_change_password_flow(self, admin_headers):
+        """Test the complete flow: invite user with must_change_password -> change password"""
+        # Invite a user
+        email = f"pwdtest_{RUN_ID}@test.it"
+        invite_resp = requests.post(f"{BASE_URL}/api/team/invite", headers=admin_headers, json={
+            "email": email, "name": "Password Test", "role": "user"
+        })
+        assert invite_resp.status_code == 200
+        temp_password = invite_resp.json()["temp_password"]
+        user_id = invite_resp.json()["user_id"]
+        
+        # Login with temp password - should have must_change_password flag
+        login_resp = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": email, "password": temp_password
+        })
+        assert login_resp.status_code == 200
+        login_data = login_resp.json()
+        assert login_data.get("must_change_password") == True, "User should have must_change_password flag"
+        
+        user_token = login_data["token"]
+        user_headers = {"Authorization": f"Bearer {user_token}"}
+        
+        # Change password
+        change_resp = requests.post(f"{BASE_URL}/api/auth/change-password", 
+            headers=user_headers,
+            json={
+                "current_password": temp_password,
+                "new_password": "newsecurepassword123"
+            }
+        )
+        assert change_resp.status_code == 200
+        
+        # Cleanup
+        requests.delete(f"{BASE_URL}/api/team/{user_id}", headers=admin_headers)
