@@ -1,4 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { NotificationService } from '../context/NotificationContext';
 import api from '../lib/api';
@@ -21,9 +22,9 @@ const LoadingFallback = () => (
   </div>
 );
 
-export default function Dashboard() {
+export default function Dashboard({ section = 'dashboard' }) {
   const { user, logout } = useAuth();
-  const [currentPage, setCurrentPage] = useState('dashboard');
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Data state
