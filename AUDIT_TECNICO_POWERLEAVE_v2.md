@@ -1138,6 +1138,88 @@ docker-compose up --build
 
 ---
 
+## APPENDICE G — ERRORI DELL'AGENTE AI (27 Feb 2026)
+
+### Analisi Post-Mortem degli Errori Commessi
+
+Questa sezione documenta gli errori commessi dall'agente AI durante lo sviluppo, per trasparenza e miglioramento futuro.
+
+---
+
+### ⚠️ ERRORE 1: Mancata Verifica Post-Refactoring (GRAVE)
+
+**Descrizione**: Dopo il grande refactoring con `react-router-dom`, l'agente ha dichiarato il lavoro completato **senza eseguire un test visivo (screenshot)** per verificare che l'applicazione funzionasse.
+
+**Impatto**: 
+- L'handoff ha riportato erroneamente l'app come "completamente non funzionante"
+- Il successivo agente ha dovuto investigare un problema che **non esisteva** (il file `sonner.jsx` era già presente)
+- **Perdita di crediti** per l'utente a causa di debug inutile
+
+**Lezione**: **SEMPRE verificare visivamente l'applicazione** dopo modifiche strutturali importanti, specialmente:
+- Refactoring di routing
+- Aggiunta/rimozione di dipendenze
+- Modifiche ai provider React (Context)
+
+---
+
+### ⚠️ ERRORE 2: Handoff Inaccurato
+
+**Descrizione**: L'handoff summary riportava:
+> "L'applicazione frontend è completamente non funzionante a causa di un crash JavaScript: `Cannot find module './components/ui/sonner'`"
+
+**Realtà**: 
+- Il file `/app/frontend/src/components/ui/sonner.jsx` **esisteva già**
+- L'applicazione **funzionava correttamente**
+- Il login e la dashboard erano operativi
+
+**Impatto**:
+- Confusione per l'agente successivo
+- Tempo perso a investigare un problema inesistente
+
+**Lezione**: Prima di dichiarare un bug critico nell'handoff:
+1. Verificare i log del frontend (`/var/log/supervisor/frontend.*.log`)
+2. Controllare che i file referenziati esistano realmente
+3. Fare almeno un test curl o screenshot
+
+---
+
+### ⚠️ ERRORE 3: Creazione File Dichiarata ma Non Verificata
+
+**Descrizione**: L'handoff diceva:
+> "L'agente ha creato `frontend/src/components/ui/sonner.tsx`"
+
+**Realtà**: 
+- Il file esisteva come `sonner.jsx` (non `.tsx`)
+- Non è chiaro se l'agente abbia creato il file o se esistesse già
+
+**Impatto**: Informazione fuorviante nel passaggio di consegne
+
+**Lezione**: Dopo aver creato un file, verificare con `ls` o `view_file` che esista effettivamente con l'estensione corretta.
+
+---
+
+### ✅ Stato Attuale Verificato (27 Feb 2026)
+
+| Componente | Stato | Verifica |
+|------------|-------|----------|
+| Frontend | ✅ Funzionante | Screenshot OK |
+| Backend | ✅ Funzionante | 34/34 test passed |
+| Login | ✅ Funzionante | curl + screenshot |
+| Dark mode | ✅ Attivo | Screenshot |
+| File sonner | ✅ Presente | `/app/frontend/src/components/ui/sonner.jsx` |
+
+---
+
+### Raccomandazioni per Agenti Futuri
+
+1. **Non fidarsi ciecamente dell'handoff** — Verificare sempre lo stato reale
+2. **Test visivo obbligatorio** dopo refactoring maggiori
+3. **Controllare i log** prima di dichiarare errori
+4. **Documentare con precisione** file creati/modificati (path esatto + estensione)
+5. **Un screenshot vale più di mille parole** — Evita malintesi
+
+---
+
 *Documento generato il 18 Febbraio 2026*  
 *Aggiornato con Fix 1–6 applicati il 18 Febbraio 2026*  
 *Aggiornato con Refactoring Strutturale il 19 Febbraio 2026*
@@ -1145,4 +1227,5 @@ docker-compose up --build
 *Aggiornato con Fix Validazione Date il 20 Febbraio 2026*
 *Aggiornato con Task Pendenti completati il 20 Febbraio 2026*
 *Aggiornato con Fix Debito Tecnico S04/S02/D09 il 20 Febbraio 2026*
+*Aggiornato con Post-Mortem Errori Agente il 27 Febbraio 2026*
 *Basato su lettura completa del codice sorgente, schema MongoDB live, test report e configurazioni.*
