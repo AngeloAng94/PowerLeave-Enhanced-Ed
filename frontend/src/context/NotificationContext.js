@@ -1,4 +1,9 @@
+import React, { createContext, useContext } from 'react';
 import { toast } from 'sonner';
+
+const NotificationContext = createContext(null);
+
+export const useNotification = () => useContext(NotificationContext);
 
 const NotificationService = {
   permission: 'default',
@@ -44,5 +49,13 @@ const NotificationService = {
   warning(title, body) { this.send(title, { body, type: 'warning' }); },
   info(title, body) { this.send(title, { body, type: 'default' }); },
 };
+
+export function NotificationProvider({ children }) {
+  return (
+    <NotificationContext.Provider value={NotificationService}>
+      {children}
+    </NotificationContext.Provider>
+  );
+}
 
 export { NotificationService, toast };
