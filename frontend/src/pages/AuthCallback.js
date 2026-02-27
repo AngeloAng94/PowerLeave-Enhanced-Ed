@@ -1,35 +1,39 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../lib/api';
-
-const API_URL = process.env.REACT_APP_BACKEND_URL || '';
 
 export default function AuthCallback() {
   const [status, setStatus] = useState('Elaborazione login...');
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const processCallback = async () => {
-      const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
+      const params = new URLSearchParams(location.search || window.location.hash.split('?')[1] || '');
       const sessionId = params.get('session_id');
 
       if (!sessionId) {
         setStatus('Errore: sessione non trovata');
-        setTimeout(() => { window.location.hash = '#/login'; }, 2000);
+        setTimeout(() => navigate('/login', { replace: true }), 2000);
         return;
       }
 
       try {
         const data = await api.post('/api/auth/session', { session_id: sessionId });
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data));
-        window.location.hash = '#/dashboard';
+        // Check if user must change password
+        if (data.must_change_password) {
+          navigate('/first-login', { replace: true });
+        } else {
+          navigate('/dashboard', { replace: true });
+        }
         window.location.reload();
       } catch (err) {
         setStatus('Errore di autenticazione: ' + (err.message || 'Riprova'));
-        setTimeout(() => { window.location.hash = '#/login'; }, 3000);
+        setTimeout(() => navigate('/login', { replace: true }), 3000);
       }
     };
     processCallback();
-  }, []);
+  }, [navigate, location]);
 
   return (
     <div style={{
