@@ -49,17 +49,19 @@ async def invite_member(data: dict, current_user: dict = Depends(get_admin_user)
         "org_id": org_id,
         "picture": None,
         "created_at": now,
-        "invited_by": current_user["user_id"]
+        "invited_by": current_user["user_id"],
+        "must_change_password": True
     })
     await init_leave_balances(user_id, org_id, now.year)
 
-    logger.info("Invited user %s (%s) with temp password: %s", name, email, temp_password)
+    logger.info("Invited user %s (%s)", name, email)
 
-    return {
-        "success": True,
-        "user_id": user_id,
-        "message": f"Utente {name} invitato con successo. La password temporanea è stata generata."
-    }
+    return InviteResponse(
+        success=True,
+        user_id=user_id,
+        message=f"Utente {name} invitato con successo.",
+        temp_password=temp_password
+    )
 
 
 @router.put("/{user_id}", response_model=SuccessResponse)
