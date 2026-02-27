@@ -196,7 +196,7 @@ export default function Dashboard({ section = 'dashboard' }) {
               {mobileMenuOpen ? Icons.x : Icons.menu}
             </button>
             <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--foreground)' }}>
-              {navItems.find(n => n.id === currentPage)?.label || 'Dashboard'}
+              {navItems.find(n => n.id === section)?.label || 'Dashboard'}
             </h2>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
