@@ -229,13 +229,13 @@ export default function Dashboard({ section = 'dashboard' }) {
                 <span style={{ fontWeight: 700, fontSize: '18px', color: 'var(--foreground)' }}>PowerLeave</span>
               </div>
               {navItems.map(item => (
-                <button key={item.id} onClick={() => { setCurrentPage(item.id); setMobileMenuOpen(false); }}
+                <button key={item.id} onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
                   style={{
                     display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
                     padding: '10px 12px', borderRadius: '8px', border: 'none',
-                    background: currentPage === item.id ? 'var(--primary)' : 'transparent',
-                    color: currentPage === item.id ? 'white' : 'var(--muted-foreground)',
-                    cursor: 'pointer', fontSize: '14px', fontWeight: currentPage === item.id ? 600 : 400,
+                    background: section === item.id ? 'var(--primary)' : 'transparent',
+                    color: section === item.id ? 'white' : 'var(--muted-foreground)',
+                    cursor: 'pointer', fontSize: '14px', fontWeight: section === item.id ? 600 : 400,
                     marginBottom: '2px', textAlign: 'left',
                   }}>
                   {item.icon} {item.label}
