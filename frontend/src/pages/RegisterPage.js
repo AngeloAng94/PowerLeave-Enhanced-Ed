@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { RocketLogo } from '../components/Icons';
 import ThemeToggle from '../components/ThemeToggle';
 
 export default function RegisterPage() {
   const { register, loginWithGoogle } = useAuth();
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,7 +21,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await register(email, name, password, orgName);
-      window.location.hash = '#/dashboard';
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(err.message || 'Errore di registrazione');
     } finally {
@@ -44,13 +46,13 @@ export default function RegisterPage() {
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         marginBottom: '20px',
       }}>
-        <a href="#/" style={{
+        <Link to="/" style={{
           display: 'flex', alignItems: 'center', gap: '8px',
           textDecoration: 'none', color: 'var(--foreground)', fontWeight: 600,
         }}>
           <RocketLogo size={32} />
           <span>PowerLeave</span>
-        </a>
+        </Link>
         <ThemeToggle />
       </div>
 
