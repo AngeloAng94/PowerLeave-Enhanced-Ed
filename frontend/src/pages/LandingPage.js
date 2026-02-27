@@ -57,16 +57,16 @@ export default function LandingPage() {
           Dashboard intuitiva, approvazioni rapide, analytics avanzate.
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <a href="#/register" data-testid="hero-cta" style={{
+          <Link to="/register" data-testid="hero-cta" style={{
             padding: '14px 32px', borderRadius: '10px', textDecoration: 'none',
             color: 'white', background: 'var(--primary)',
             fontSize: '16px', fontWeight: 600,
-          }}>Inizia Gratis</a>
-          <a href="#/login" style={{
+          }}>Inizia Gratis</Link>
+          <Link to="/login" style={{
             padding: '14px 32px', borderRadius: '10px', textDecoration: 'none',
             color: 'var(--foreground)', border: '1px solid var(--border)',
             fontSize: '16px', fontWeight: 500,
-          }}>Demo Live</a>
+          }}>Demo Live</Link>
         </div>
       </section>
 
