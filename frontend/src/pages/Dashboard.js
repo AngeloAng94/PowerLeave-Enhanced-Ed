@@ -201,7 +201,7 @@ export default function Dashboard({ section = 'dashboard' }) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <ThemeToggle />
-            {user?.role === 'admin' && currentPage === 'dashboard' && (
+            {user?.role === 'admin' && section === 'dashboard' && (
               <button data-testid="new-request-btn" onClick={() => setShowRequestModal(true)} style={{
                 display: 'flex', alignItems: 'center', gap: '6px',
                 padding: '8px 16px', borderRadius: '8px',
