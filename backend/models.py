@@ -183,6 +183,12 @@ class InviteResponse(BaseModel):
     success: bool = True
     user_id: str
     message: str
+    temp_password: str
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
 
 
 class AuthResponse(BaseModel):
