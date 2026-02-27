@@ -90,7 +90,8 @@ async def login(request: Request, credentials: UserLogin, response: Response):
         "role": user["role"],
         "org_id": user["org_id"],
         "picture": user.get("picture"),
-        "message": "Benvenuto!"
+        "message": "Benvenuto!",
+        "must_change_password": user.get("must_change_password", False)
     }
 
 
