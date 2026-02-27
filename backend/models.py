@@ -28,6 +28,7 @@ class User(BaseModel):
     org_id: str
     picture: Optional[str] = None
     created_at: Optional[Any] = None
+    must_change_password: bool = False
 
 
 class Organization(BaseModel):
