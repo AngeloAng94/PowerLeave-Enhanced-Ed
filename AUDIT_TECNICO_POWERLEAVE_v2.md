@@ -23,6 +23,7 @@
 13. [Appendice E — Task Pendenti Completati (20 Feb)](#appendice-e--completamento-task-pendenti-20-feb-2026)
 14. [Appendice F — Fix Debito Tecnico S04/S02/D09 (20 Feb)](#appendice-f--fix-debito-tecnico-sicurezza-e-routing-20-feb-2026)
 15. [Riepilogo Stato Progetto](#riepilogo-stato-progetto)
+16. [Appendice G — Errori dell'Agente AI (27 Feb)](#appendice-g--errori-dellagente-ai-27-feb-2026)
 
 ---
 
