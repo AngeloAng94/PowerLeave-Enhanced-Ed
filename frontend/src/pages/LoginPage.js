@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { RocketLogo } from '../components/Icons';
 import ThemeToggle from '../components/ThemeToggle';
 
 export default function LoginPage() {
   const { login, loginWithGoogle } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -15,8 +17,13 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      await login(email, password);
-      window.location.hash = '#/dashboard';
+      const data = await login(email, password);
+      // Redirect based on must_change_password flag
+      if (data.must_change_password) {
+        navigate('/first-login', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
     } catch (err) {
       setError(err.message || 'Errore di login');
     } finally {
@@ -34,13 +41,13 @@ export default function LoginPage() {
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         marginBottom: '20px',
       }}>
-        <a href="#/" style={{
+        <Link to="/" style={{
           display: 'flex', alignItems: 'center', gap: '8px',
           textDecoration: 'none', color: 'var(--foreground)', fontWeight: 600,
         }}>
           <RocketLogo size={32} />
           <span>PowerLeave</span>
-        </a>
+        </Link>
         <ThemeToggle />
       </div>
 
