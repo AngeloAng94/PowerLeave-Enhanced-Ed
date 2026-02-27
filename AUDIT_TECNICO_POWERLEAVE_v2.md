@@ -1235,6 +1235,7 @@ Questa sezione documenta gli errori commessi dall'agente AI durante lo sviluppo,
 | Frontend | ✅ Funzionante | Screenshot OK |
 | Backend | ✅ Funzionante | 34/34 test passed |
 | Login | ✅ Funzionante | curl + screenshot |
+| **Dashboard** | ✅ Funzionante | Fix `currentPage → section` |
 | Dark mode | ✅ Attivo | Screenshot |
 | File sonner | ✅ Presente | `/app/frontend/src/components/ui/sonner.jsx` |
 
