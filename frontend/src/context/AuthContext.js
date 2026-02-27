@@ -15,18 +15,13 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const checkAuth = useCallback(async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setLoading(false);
-      return;
-    }
     try {
+      // Check auth via HttpOnly cookie (no localStorage)
       const userData = await api.get('/api/auth/me');
       setUser(userData);
       NotificationService.init();
     } catch {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -38,8 +33,6 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const data = await api.post('/api/auth/login', { email, password });
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data));
     setUser(data);
     NotificationService.init();
     return data;
@@ -49,8 +42,6 @@ export function AuthProvider({ children }) {
     const data = await api.post('/api/auth/register', {
       email, name, password, organization_name: organizationName,
     });
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data));
     setUser(data);
     NotificationService.init();
     return data;
@@ -58,10 +49,12 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try { await api.post('/api/auth/logout', {}); } catch {}
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
     setUser(null);
     window.location.hash = '';
+  };
+
+  const updateUser = (updates) => {
+    setUser(prev => prev ? { ...prev, ...updates } : null);
   };
 
   const loginWithGoogle = () => {
@@ -70,7 +63,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, loginWithGoogle }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, loginWithGoogle, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
