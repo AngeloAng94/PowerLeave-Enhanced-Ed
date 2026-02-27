@@ -86,22 +86,22 @@ export default function Dashboard({ section = 'dashboard' }) {
   };
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Icons.dashboard },
-    { id: 'calendar', label: 'Calendario', icon: Icons.calendar },
-    { id: 'requests', label: 'Richieste', icon: Icons.fileText },
-    { id: 'announcements', label: 'Bacheca', icon: Icons.megaphone },
-    { id: 'closures', label: 'Chiusure', icon: Icons.lock },
+    { id: 'dashboard', label: 'Dashboard', icon: Icons.dashboard, path: '/dashboard' },
+    { id: 'calendar', label: 'Calendario', icon: Icons.calendar, path: '/calendar' },
+    { id: 'requests', label: 'Richieste', icon: Icons.fileText, path: '/requests' },
+    { id: 'announcements', label: 'Bacheca', icon: Icons.megaphone, path: '/announcements' },
+    { id: 'closures', label: 'Chiusure', icon: Icons.lock, path: '/closures' },
     ...(user?.role === 'admin' ? [
-      { id: 'team', label: 'Team', icon: Icons.users },
-      { id: 'stats', label: 'Statistiche', icon: Icons.barChart },
-      { id: 'settings', label: 'Impostazioni', icon: Icons.settings },
+      { id: 'team', label: 'Team', icon: Icons.users, path: '/team' },
+      { id: 'stats', label: 'Statistiche', icon: Icons.barChart, path: '/stats' },
+      { id: 'settings', label: 'Impostazioni', icon: Icons.settings, path: '/settings' },
     ] : []),
   ];
 
   const renderPage = () => {
     const lazyPage = (component) => <Suspense fallback={<LoadingFallback />}>{component}</Suspense>;
 
-    switch (currentPage) {
+    switch (section) {
       case 'dashboard':
         return <DashboardContent stats={stats} pendingRequests={pendingRequests} leaveTypes={leaveTypes} balances={balances} allRequests={allRequests} team={team} user={user} onReview={handleReview} onCreateRequest={handleCreateRequest} onRefresh={loadDashboardData} />;
       case 'calendar':
