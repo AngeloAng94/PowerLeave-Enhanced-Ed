@@ -113,7 +113,7 @@ export default function LoginPage() {
         </button>
 
         <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: 'var(--muted-foreground)' }}>
-          Non hai un account? <a href="#/register" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 500 }}>Registrati</a>
+          Non hai un account? <Link to="/register" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 500 }}>Registrati</Link>
         </p>
 
         <div style={{ marginTop: '24px', padding: '12px', borderRadius: '8px', background: 'var(--muted)', fontSize: '12px', color: 'var(--muted-foreground)' }}>
