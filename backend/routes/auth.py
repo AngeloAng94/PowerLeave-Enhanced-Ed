@@ -11,7 +11,7 @@ from auth import (
     create_access_token, verify_password, get_password_hash,
     validate_password, get_current_user
 )
-from models import UserCreate, UserLogin, AuthResponse, LogoutResponse
+from models import UserCreate, UserLogin, AuthResponse, LogoutResponse, ChangePasswordRequest, SuccessResponse
 from config import SECRET_KEY
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
