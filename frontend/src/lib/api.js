@@ -15,7 +15,8 @@ const api = {
       });
 
       if (response.status === 401) {
-        window.location.hash = '#/login';
+        // Redirect to login - will be handled by HashRouter
+        window.location.href = window.location.origin + '/#/login';
         throw new Error('Non autenticato');
       }
 
