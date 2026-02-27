@@ -1001,10 +1001,144 @@ docker-compose up --build
 
 ---
 
+## APPENDICE F — FIX DEBITO TECNICO SICUREZZA E ROUTING (20 Feb 2026)
+
+### Fix completati
+
+| ID | Descrizione | Priorità | Stato |
+|----|-------------|----------|-------|
+| **S04** | Flusso invito utenti con password temporanea | P0 | ✅ Risolto |
+| **S02** | Rimozione JWT da localStorage | P0 | ✅ Risolto |
+| **D09** | Routing con react-router-dom v6 | P1 | ✅ Risolto |
+
+---
+
+### S04 — Flusso Invito Utenti Completo
+
+**Problema**: Gli utenti invitati non avevano modo di ricevere la password temporanea né di cambiarla.
+
+**Soluzione implementata:**
+
+1. **Modello User aggiornato**:
+   - Aggiunto campo `must_change_password: bool` (default False)
+   - Quando un utente viene invitato, il flag è impostato a True
+
+2. **Endpoint `/api/auth/change-password`** (nuovo):
+   - Verifica password corrente
+   - Valida nuova password (min 8 char, almeno 1 numero)
+   - Imposta `must_change_password = False` dopo il cambio
+
+3. **API Invite aggiornata**:
+   - Restituisce `temp_password` all'admin
+   - L'admin può copiare e comunicare la password all'utente
+
+4. **Pagina FirstLoginPage** (nuova):
+   - Schermata dedicata per il primo accesso
+   - Form per cambiare password temporanea
+   - Redirect automatico se `must_change_password = True`
+
+5. **UI Team migliorata**:
+   - Modale con password temporanea dopo invito
+   - Pulsante "Copia" per copiare la password
+   - Istruzioni chiare per l'admin
+
+**File modificati:**
+- `backend/models.py` — Aggiunto `must_change_password`, `ChangePasswordRequest`
+- `backend/routes/auth.py` — Aggiunto endpoint change-password
+- `backend/routes/team.py` — Restituisce temp_password
+- `frontend/src/pages/FirstLoginPage.js` — Nuovo
+- `frontend/src/pages/TeamPage.js` — Modale password
+- `frontend/src/App.js` — Route /first-login
+
+---
+
+### S02 — Rimozione JWT da localStorage
+
+**Problema**: Il token JWT era salvato in localStorage, esponendolo a attacchi XSS.
+
+**Soluzione implementata:**
+
+1. **Autenticazione solo via HttpOnly cookie**:
+   - Il cookie `session_token` è già impostato dal backend
+   - Rimossa qualsiasi lettura/scrittura di `localStorage.getItem('token')`
+   - Rimossa `localStorage.setItem('token', ...)` e `localStorage.removeItem('token')`
+
+2. **API helper aggiornato**:
+   - Usa solo `credentials: 'include'` per inviare il cookie
+   - Nessun header `Authorization: Bearer` 
+
+3. **AuthContext semplificato**:
+   - `checkAuth()` chiama `/api/auth/me` senza controllare localStorage
+   - Login/Register non salvano più il token
+   - Logout pulisce solo lo stato React
+
+**File modificati:**
+- `frontend/src/lib/api.js` — Rimosso localStorage
+- `frontend/src/context/AuthContext.js` — Rimosso localStorage
+
+---
+
+### D09 — Routing con react-router-dom v6
+
+**Problema**: Il routing era basato su `window.location.hash` con switch/case manuale.
+
+**Soluzione implementata:**
+
+1. **Installato react-router-dom v6**:
+   ```bash
+   yarn add react-router-dom@6
+   ```
+
+2. **App.js riscritto**:
+   - Usa `HashRouter`, `Routes`, `Route` da react-router-dom
+   - Route dichiarative per tutte le 13 pagine
+   - Componenti `PrivateRoute`, `PublicRoute`, `FirstLoginRoute` per protezione
+
+3. **Path semantici**:
+   | Path | Componente | Protezione |
+   |------|------------|------------|
+   | `/` | LandingPage | Public |
+   | `/login` | LoginPage | Public (redirect se autenticato) |
+   | `/register` | RegisterPage | Public |
+   | `/auth/callback` | AuthCallback | - |
+   | `/first-login` | FirstLoginPage | Autenticato + must_change_password |
+   | `/dashboard` | Dashboard | Autenticato |
+   | `/calendar` | Dashboard(calendar) | Autenticato |
+   | `/stats` | Dashboard(stats) | Autenticato |
+   | `/requests` | Dashboard(requests) | Autenticato |
+   | `/team` | Dashboard(team) | Autenticato |
+   | `/settings` | Dashboard(settings) | Autenticato |
+   | `/announcements` | Dashboard(announcements) | Autenticato |
+   | `/closures` | Dashboard(closures) | Autenticato |
+
+4. **Pagine aggiornate**:
+   - Tutti i `<a href="#/...">` convertiti in `<Link to="/...">`
+   - `window.location.hash = '#/...'` convertiti in `navigate('/...')`
+   - Usato hook `useNavigate()` da react-router-dom
+
+**File modificati:**
+- `frontend/src/App.js` — Riscritto con react-router-dom
+- `frontend/src/pages/LandingPage.js` — Link component
+- `frontend/src/pages/LoginPage.js` — Link + useNavigate
+- `frontend/src/pages/RegisterPage.js` — Link + useNavigate
+- `frontend/src/pages/AuthCallback.js` — useNavigate + useLocation
+- `frontend/src/pages/Dashboard.js` — useNavigate + prop section
+
+---
+
+### Test Suite aggiornata
+
+- **Nuovo test**: `TestChangePassword::test_change_password_flow`
+- **Test aggiornato**: `test_invite_returns_temp_password` (verificare che temp_password sia presente)
+- **Totale**: 34/34 passed ✅
+
+---
+
 *Documento generato il 18 Febbraio 2026*  
 *Aggiornato con Fix 1–6 applicati il 18 Febbraio 2026*  
 *Aggiornato con Refactoring Strutturale il 19 Febbraio 2026*
 *Aggiornato con Fix UI/UX il 20 Febbraio 2026*
 *Aggiornato con Fix Validazione Date il 20 Febbraio 2026*
 *Aggiornato con Task Pendenti completati il 20 Febbraio 2026*
+*Aggiornato con Fix Debito Tecnico S04/S02/D09 il 20 Febbraio 2026*
 *Basato su lettura completa del codice sorgente, schema MongoDB live, test report e configurazioni.*
