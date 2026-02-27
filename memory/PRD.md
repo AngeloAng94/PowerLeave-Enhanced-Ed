@@ -73,6 +73,7 @@ frontend/src/ (20+ file)
 ```
 
 ## Next Tasks (P0)
+- [x] ~~Dashboard crash fix (currentPage → section)~~ ✅
 - [x] ~~Aggiungere `response_model` agli endpoint FastAPI (D04)~~ ✅
 - [x] ~~Helper centralizzato init_leave_balances (D08)~~ ✅ (già presente)
 
