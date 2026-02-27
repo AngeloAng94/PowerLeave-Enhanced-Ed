@@ -80,6 +80,8 @@ frontend/src/ (20+ file)
 ## Upcoming Tasks (P1)
 - [x] ~~Dockerizzazione (Dockerfile + docker-compose)~~ ✅
 - [x] ~~README.md professionale~~ ✅
+- [ ] Test Docker setup (docker-compose up)
+- [ ] Verificare ZIP progetto con utente
 
 ## Future (P2-P3)
 - [ ] Google Calendar integration (on hold per utente)
