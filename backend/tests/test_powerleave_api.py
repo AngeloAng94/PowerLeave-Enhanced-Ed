@@ -10,7 +10,7 @@ import os
 import uuid
 from datetime import datetime, timedelta
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://hr-italia-preview.preview.emergentagent.com")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://company-leave-app.preview.emergentagent.com")
 
 # Unique run ID to avoid collisions across consecutive runs
 RUN_ID = uuid.uuid4().hex[:8]

@@ -11,7 +11,7 @@ Devi catturare 5 screenshot dal tuo browser. Ecco come:
 
 ### URL Demo
 ```
-https://hr-italia-preview.preview.emergentagent.com
+https://company-leave-app.preview.emergentagent.com
 ```
 
 ### Login

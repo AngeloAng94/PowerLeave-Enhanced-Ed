@@ -286,11 +286,11 @@ Nel file client/src/i18n/translations.ts, aggiungi:
 /*
 Cattura questi screenshot dal tuo browser (1920x1080, dark mode):
 
-1. Dashboard: https://hr-italia-preview.preview.emergentagent.com/#/dashboard
-2. Calendario: https://hr-italia-preview.preview.emergentagent.com/#/dashboard (click su Calendario)
-3. Team: https://hr-italia-preview.preview.emergentagent.com/#/dashboard (click su Team)
-4. Statistiche: https://hr-italia-preview.preview.emergentagent.com/#/dashboard (click su Statistiche)
-5. Impostazioni: https://hr-italia-preview.preview.emergentagent.com/#/dashboard (click su Impostazioni)
+1. Dashboard: https://company-leave-app.preview.emergentagent.com/#/dashboard
+2. Calendario: https://company-leave-app.preview.emergentagent.com/#/dashboard (click su Calendario)
+3. Team: https://company-leave-app.preview.emergentagent.com/#/dashboard (click su Team)
+4. Statistiche: https://company-leave-app.preview.emergentagent.com/#/dashboard (click su Statistiche)
+5. Impostazioni: https://company-leave-app.preview.emergentagent.com/#/dashboard (click su Impostazioni)
 
 Login: admin@demo.it / demo123
 

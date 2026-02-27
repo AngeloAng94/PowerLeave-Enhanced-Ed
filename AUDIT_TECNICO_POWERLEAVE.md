@@ -716,7 +716,7 @@ const api = {
 ### 8.1 Ambiente Attuale
 
 - **Piattaforma**: Emergent Agent (Kubernetes)
-- **URL Preview**: `https://hr-italia-preview.preview.emergentagent.com`
+- **URL Preview**: `https://company-leave-app.preview.emergentagent.com`
 - **Process Manager**: Supervisor
   - Backend: porta 8001 (auto-restart)
   - Frontend: porta 3000 (auto-restart)
@@ -732,7 +732,7 @@ DB_NAME=powerleave
 
 **Frontend `.env`:**
 ```
-REACT_APP_BACKEND_URL=https://hr-italia-preview.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://company-leave-app.preview.emergentagent.com
 ```
 
 ### 8.3 Mancante per Produzione
