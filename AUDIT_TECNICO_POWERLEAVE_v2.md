@@ -1199,6 +1199,35 @@ Questa sezione documenta gli errori commessi dall'agente AI durante lo sviluppo,
 
 ---
 
+### ⚠️ ERRORE 4: Variabile Non Definita nel Dashboard (CRITICO)
+
+**Descrizione**: Nel file `Dashboard.js`, l'agente ha lasciato riferimenti alla variabile `currentPage` che non esisteva più dopo la migrazione a `react-router-dom`.
+
+**Righe interessate**:
+- Riga 204: `currentPage === 'dashboard'` invece di `section === 'dashboard'`
+- Righe 232-238: `currentPage` usato nel mobile menu invece di `section` + `navigate()`
+
+**Errore React**: `ReferenceError: currentPage is not defined at Dashboard`
+
+**Impatto**: 
+- **Dashboard completamente inutilizzabile** — crash dopo login
+- L'utente vedeva una schermata di errore rossa invece della dashboard
+
+**Fix applicato (27 Feb 2026)**:
+```javascript
+// PRIMA (sbagliato)
+{user?.role === 'admin' && currentPage === 'dashboard' && ...}
+
+// DOPO (corretto)
+{user?.role === 'admin' && section === 'dashboard' && ...}
+```
+
+**Lezione**: Durante i refactoring da state locale a props/router:
+1. Fare `grep -r "oldVariableName"` per trovare TUTTI i riferimenti
+2. Testare **tutte** le sezioni dell'interfaccia, non solo la prima
+
+---
+
 ### ✅ Stato Attuale Verificato (27 Feb 2026)
 
 | Componente | Stato | Verifica |
