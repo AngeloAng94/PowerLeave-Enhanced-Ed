@@ -1,4 +1,4 @@
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
 
 const NotificationService = {
   permission: 'default',
@@ -45,4 +45,4 @@ const NotificationService = {
   info(title, body) { this.send(title, { body, type: 'default' }); },
 };
 
-export { NotificationService, Toaster, toast };
+export { NotificationService, toast };
