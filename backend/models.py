@@ -200,6 +200,7 @@ class AuthResponse(BaseModel):
     org_id: str
     picture: Optional[str] = None
     message: Optional[str] = None
+    must_change_password: bool = False
 
 
 class LogoutResponse(BaseModel):
