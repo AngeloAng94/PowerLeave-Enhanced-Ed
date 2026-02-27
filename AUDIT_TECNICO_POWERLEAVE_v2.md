@@ -849,8 +849,10 @@ Nuova classe `TestDateValidation` con 3 test:
    - Rate limiting su auth
    - Password validation server-side
    - CORS ristretto
-   - Test suite stabile (33 test)
+   - Test suite stabile (34 test)
    - CI/CD GitHub Actions
+   - **JWT rimosso da localStorage** (S02) — Solo HttpOnly cookie
+   - **Flusso invito utenti completo** (S04) — Password temporanea + cambio password
 
 2. **Fix Critici Database** (P0)
    - Schema closures unificato
@@ -862,6 +864,7 @@ Nuova classe `TestDateValidation` con 3 test:
    - Backend modulare (routes/, models, auth, config)
    - Frontend modulare (pages/, components/, context/)
    - Code splitting con React.lazy
+   - **Routing con react-router-dom v6** (D09)
 
 4. **Fix UI/UX** (P0)
    - Dark mode default
