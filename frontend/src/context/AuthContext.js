@@ -50,7 +50,7 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try { await api.post('/api/auth/logout', {}); } catch {}
     setUser(null);
-    window.location.hash = '';
+    window.location.href = window.location.origin + '/#/';
   };
 
   const updateUser = (updates) => {
