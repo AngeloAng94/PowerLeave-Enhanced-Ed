@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { RocketLogo, Icons, ANTHERA_LOGO_URL } from '../components/Icons';
 import ThemeToggle from '../components/ThemeToggle';
@@ -20,16 +21,16 @@ export default function LandingPage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <ThemeToggle />
-          <a href="#/login" data-testid="nav-login" style={{
+          <Link to="/login" data-testid="nav-login" style={{
             padding: '8px 16px', borderRadius: '8px', textDecoration: 'none',
             color: 'var(--foreground)', border: '1px solid var(--border)',
             fontSize: '14px', fontWeight: 500,
-          }}>Accedi</a>
-          <a href="#/register" data-testid="nav-register" style={{
+          }}>Accedi</Link>
+          <Link to="/register" data-testid="nav-register" style={{
             padding: '8px 16px', borderRadius: '8px', textDecoration: 'none',
             color: 'white', background: 'var(--primary)',
             fontSize: '14px', fontWeight: 500,
-          }}>Registrati</a>
+          }}>Registrati</Link>
         </div>
       </header>
 
