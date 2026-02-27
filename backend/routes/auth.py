@@ -194,3 +194,29 @@ async def get_me(current_user: dict = Depends(get_current_user)):
 async def logout(response: Response):
     response.delete_cookie("session_token")
     return LogoutResponse(message="Logout effettuato")
+
+
+@router.post("/change-password", response_model=SuccessResponse)
+async def change_password(data: ChangePasswordRequest, current_user: dict = Depends(get_current_user)):
+    """Change password - required for users with must_change_password flag"""
+    user = await db.users.find_one({"user_id": current_user["user_id"]})
+    if not user:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+
+    # Verify current password
+    if not verify_password(data.current_password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Password corrente non valida")
+
+    # Validate new password
+    validate_password(data.new_password)
+
+    # Update password and clear must_change_password flag
+    await db.users.update_one(
+        {"user_id": current_user["user_id"]},
+        {"$set": {
+            "password_hash": get_password_hash(data.new_password),
+            "must_change_password": False
+        }}
+    )
+
+    return SuccessResponse()
