@@ -539,3 +539,68 @@ class TestChangePassword:
         
         # Cleanup
         requests.delete(f"{BASE_URL}/api/team/{user_id}", headers=admin_headers)
+
+    def test_change_password_wrong_current(self, admin_headers):
+        """Test that wrong current password returns 401"""
+        # Invite a user
+        email = f"pwdwrong_{RUN_ID}@test.it"
+        invite_resp = requests.post(f"{BASE_URL}/api/team/invite", headers=admin_headers, json={
+            "email": email, "name": "Wrong Password Test", "role": "user"
+        })
+        assert invite_resp.status_code == 200
+        temp_password = invite_resp.json()["temp_password"]
+        user_id = invite_resp.json()["user_id"]
+        
+        # Login with temp password
+        login_resp = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": email, "password": temp_password
+        })
+        assert login_resp.status_code == 200
+        user_token = login_resp.json()["token"]
+        user_headers = {"Authorization": f"Bearer {user_token}"}
+        
+        # Try to change with wrong current password
+        change_resp = requests.post(f"{BASE_URL}/api/auth/change-password", 
+            headers=user_headers,
+            json={
+                "current_password": "wrongpassword123",
+                "new_password": "newsecurepassword123"
+            }
+        )
+        assert change_resp.status_code == 401
+        assert "corrente" in change_resp.json().get("detail", "").lower()
+        
+        # Cleanup
+        requests.delete(f"{BASE_URL}/api/team/{user_id}", headers=admin_headers)
+
+    def test_change_password_weak_new(self, admin_headers):
+        """Test that weak new password returns 422"""
+        # Invite a user
+        email = f"pwdweak_{RUN_ID}@test.it"
+        invite_resp = requests.post(f"{BASE_URL}/api/team/invite", headers=admin_headers, json={
+            "email": email, "name": "Weak Password Test", "role": "user"
+        })
+        assert invite_resp.status_code == 200
+        temp_password = invite_resp.json()["temp_password"]
+        user_id = invite_resp.json()["user_id"]
+        
+        # Login with temp password
+        login_resp = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": email, "password": temp_password
+        })
+        assert login_resp.status_code == 200
+        user_token = login_resp.json()["token"]
+        user_headers = {"Authorization": f"Bearer {user_token}"}
+        
+        # Try to change with weak new password (too short)
+        change_resp = requests.post(f"{BASE_URL}/api/auth/change-password", 
+            headers=user_headers,
+            json={
+                "current_password": temp_password,
+                "new_password": "short"  # Too short, no number
+            }
+        )
+        assert change_resp.status_code == 422
+        
+        # Cleanup
+        requests.delete(f"{BASE_URL}/api/team/{user_id}", headers=admin_headers)

@@ -24,6 +24,7 @@
 14. [Appendice F — Fix Debito Tecnico S04/S02/D09 (20 Feb)](#appendice-f--fix-debito-tecnico-sicurezza-e-routing-20-feb-2026)
 15. [Riepilogo Stato Progetto](#riepilogo-stato-progetto)
 16. [Appendice G — Errori dell'Agente AI (27 Feb)](#appendice-g--errori-dellagente-ai-27-feb-2026)
+17. [Appendice H — Fix S04 Flusso Invito Utenti (2 Mar)](#appendice-h--fix-s04-flusso-invito-utenti-2-mar-2026)
 
 ---
 
@@ -365,9 +366,9 @@ reviewed_at   : datetime  (dopo review)
 | ID  | Severità | Priorità | Descrizione | Stato | Dettaglio tecnico |
 |-----|----------|----------|-------------|-------|-------------------|
 | S01 | **MEDIA** | P1 | CORS: `allow_methods=["*"]`, `allow_headers=["*"]` | **Risolto — Fix 6** | `server.py` L95–96. Ristretto a GET/POST/PUT/DELETE/OPTIONS e Content-Type/Authorization. |
-| S02 | **MEDIA** | P1 | Token JWT in localStorage | Aperto | `App.js` L166. Il token è leggibile da JavaScript. Un attacco XSS può esfiltrare il token. Il cookie HttpOnly è un backup, ma il token è comunque esposto. |
+| S02 | **MEDIA** | P1 | Token JWT in localStorage | **Risolto — Fix D09** | JWT rimosso da localStorage, autenticazione solo via HttpOnly cookie. |
 | S03 | **MEDIA** | P1 | Nessuna validazione forza password | **Risolto — Fix 4** | Validazione server-side: min 8 char + almeno 1 numero su register e invite. HTTP 422 con messaggio chiaro. |
-| S04 | **MEDIA** | P1 | Password temporanea non consegnabile all'utente | Aperto | `server.py` L1065–1066. La temp password è loggata server-side ma non c'è modo per l'admin di comunicarla all'utente invitato (no email, no UI). L'utente invitato non può accedere. |
+| S04 | **MEDIA** | P1 | Password temporanea non consegnabile all'utente | **Risolto — Fix S04** | Flusso completo: API restituisce temp_password, modale UI per admin, pagina FirstLogin per cambio password obbligatorio. |
 | S05 | **BASSA** | P2 | SameSite=None senza necessità | Aperto | `server.py` L470. `SameSite=None` è necessario solo per cookie cross-origin. Se frontend e backend sono sullo stesso dominio, `Lax` sarebbe più sicuro. |
 | S06 | **BASSA** | P2 | Nessun CSRF token | Aperto | Mitigato parzialmente dal cookie SameSite, ma con SameSite=None il rischio rimane. |
 | S07 | **BASSA** | P2 | Nessun Content Security Policy header | Aperto | Nessun CSP configurato. Un XSS potrebbe caricare script esterni. |
@@ -850,7 +851,7 @@ Nuova classe `TestDateValidation` con 3 test:
    - Rate limiting su auth
    - Password validation server-side
    - CORS ristretto
-   - Test suite stabile (34 test)
+   - Test suite stabile (36 test)
    - CI/CD GitHub Actions
    - **JWT rimosso da localStorage** (S02) — Solo HttpOnly cookie
    - **Flusso invito utenti completo** (S04) — Password temporanea + cambio password
@@ -1251,6 +1252,93 @@ Questa sezione documenta gli errori commessi dall'agente AI durante lo sviluppo,
 
 ---
 
+## APPENDICE H — FIX S04 FLUSSO INVITO UTENTI (2 Mar 2026)
+
+### Problema Originale
+
+Gli utenti invitati non potevano accedere al sistema perché:
+1. La password temporanea veniva generata ma non comunicata all'admin
+2. Non esisteva un meccanismo per forzare il cambio password al primo accesso
+3. L'utente invitato non aveva modo di impostare una password sicura
+
+### Soluzione Implementata
+
+#### 1. Backend - Modello User esteso
+```python
+# models.py
+class User(BaseModel):
+    ...
+    must_change_password: bool = False
+```
+
+#### 2. Backend - API Invite aggiornata
+```python
+# routes/team.py - POST /api/team/invite
+# Restituisce temp_password nella response per l'admin
+return InviteResponse(
+    success=True,
+    user_id=user_id,
+    message=f"Utente {name} invitato con successo.",
+    temp_password=temp_password  # Visibile SOLO in questa response
+)
+```
+
+#### 3. Backend - Endpoint Change Password
+```python
+# routes/auth.py - POST /api/auth/change-password
+# Verifica password corrente, valida nuova password, aggiorna hash
+# Setta must_change_password = False dopo il cambio
+```
+
+#### 4. Frontend - Modale Password Temporanea (TeamPage.js)
+- Mostra password temporanea dopo invito con successo
+- Pulsante "Copia" per copiare negli appunti
+- Istruzioni chiare per l'admin
+- Password mostrata UNA SOLA VOLTA
+
+#### 5. Frontend - Pagina First Login (FirstLoginPage.js)
+- Form dedicato per il primo accesso
+- Campi: Password temporanea, Nuova password, Conferma
+- Validazione frontend: min 8 char, almeno 1 numero
+- Redirect automatico a /dashboard dopo cambio
+
+#### 6. Frontend - Routing protetto (App.js)
+```javascript
+// Se user.must_change_password === true
+// Redirect automatico a /first-login
+// Non può navigare ad altre pagine
+```
+
+### File Modificati
+
+| File | Tipo | Descrizione |
+|------|------|-------------|
+| `backend/models.py` | Modificato | Aggiunto `must_change_password`, `ChangePasswordRequest`, `InviteResponse` |
+| `backend/routes/auth.py` | Modificato | Aggiunto endpoint `/api/auth/change-password` |
+| `backend/routes/team.py` | Modificato | Restituisce `temp_password` nella response |
+| `frontend/src/pages/TeamPage.js` | Modificato | Modale con password temporanea |
+| `frontend/src/pages/FirstLoginPage.js` | Creato | Pagina cambio password obbligatorio |
+| `frontend/src/App.js` | Modificato | Route `/first-login` + `FirstLoginRoute` guard |
+| `frontend/src/context/AuthContext.js` | Modificato | `updateUser` per aggiornare flag dopo cambio |
+
+### Test Aggiunti
+
+```python
+# backend/tests/test_powerleave_api.py
+class TestChangePassword:
+    test_change_password_flow         # Flusso completo invite → login → change
+    test_change_password_wrong_current # 401 con password sbagliata
+    test_change_password_weak_new     # 422 con password debole
+```
+
+### Verifica
+
+- **Test Backend**: 36/36 passed ✅
+- **Screenshot UI**: Modale password temporanea verificato ✅
+- **Flusso E2E**: Invite → Login → First Login → Dashboard ✅
+
+---
+
 *Documento generato il 18 Febbraio 2026*  
 *Aggiornato con Fix 1–6 applicati il 18 Febbraio 2026*  
 *Aggiornato con Refactoring Strutturale il 19 Febbraio 2026*
@@ -1259,4 +1347,5 @@ Questa sezione documenta gli errori commessi dall'agente AI durante lo sviluppo,
 *Aggiornato con Task Pendenti completati il 20 Febbraio 2026*
 *Aggiornato con Fix Debito Tecnico S04/S02/D09 il 20 Febbraio 2026*
 *Aggiornato con Post-Mortem Errori Agente il 27 Febbraio 2026*
+*Aggiornato con Fix S04 Flusso Invito Utenti il 2 Marzo 2026*
 *Basato su lettura completa del codice sorgente, schema MongoDB live, test report e configurazioni.*

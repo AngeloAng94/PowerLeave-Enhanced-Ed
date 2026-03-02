@@ -19,11 +19,12 @@ Sistema di gestione ferie per aziende italiane con design moderno, configurabile
 
 ## What's Been Implemented
 
-### Session 9 - 27 Feb 2026 (Bug Fix Critico + Post-Mortem)
-- **FIX CRITICO: Dashboard crash risolto** - Variabile `currentPage` non definita sostituita con `section` (prop da react-router-dom)
-- **Audit Tecnico aggiornato** - Aggiunta Appendice G con analisi post-mortem degli errori dell'agente precedente
-- **Documentazione errori AI** - 4 errori documentati per trasparenza e miglioramento futuro
-- **Test**: 34/34 backend passed + Dashboard, Calendar, Team verificati con screenshot
+### Session 9 - 27 Feb / 2 Mar 2026 (Bug Fix + S04 Verification)
+- **FIX CRITICO: Dashboard crash risolto** - Variabile `currentPage` non definita sostituita con `section`
+- **Verifica S04 completa** - Flusso invito utenti già implementato e funzionante
+- **Test aggiunti**: `test_change_password_wrong_current`, `test_change_password_weak_new`
+- **Audit Tecnico aggiornato** - Appendice G (errori AI) + Appendice H (fix S04)
+- **Test**: 36/36 backend passed + UI verificata con screenshot
 
 ### Session 8 - 20 Feb 2026 (UI/UX Fix + Date Validation + Task Completati)
 - **Dark mode ripristinato come default** - ThemeToggle ora usa dark mode quando non c'è preferenza salvata
