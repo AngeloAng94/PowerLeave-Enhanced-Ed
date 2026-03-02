@@ -19,11 +19,12 @@ Sistema di gestione ferie per aziende italiane con design moderno, configurabile
 
 ## What's Been Implemented
 
-### Session 9 - 27 Feb / 2 Mar 2026 (Bug Fix + S04 Verification)
+### Session 9 - 27 Feb / 2 Mar 2026 (Bug Fix + S04/S02 Verification)
 - **FIX CRITICO: Dashboard crash risolto** - Variabile `currentPage` non definita sostituita con `section`
 - **Verifica S04 completa** - Flusso invito utenti già implementato e funzionante
+- **Verifica S02 completa** - JWT rimosso da localStorage, autenticazione solo via HttpOnly cookie
 - **Test aggiunti**: `test_change_password_wrong_current`, `test_change_password_weak_new`
-- **Audit Tecnico aggiornato** - Appendice G (errori AI) + Appendice H (fix S04)
+- **Audit Tecnico aggiornato** - Appendice G, H, I
 - **Test**: 36/36 backend passed + UI verificata con screenshot
 
 ### Session 8 - 20 Feb 2026 (UI/UX Fix + Date Validation + Task Completati)

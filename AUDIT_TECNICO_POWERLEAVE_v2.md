@@ -25,6 +25,7 @@
 15. [Riepilogo Stato Progetto](#riepilogo-stato-progetto)
 16. [Appendice G — Errori dell'Agente AI (27 Feb)](#appendice-g--errori-dellagente-ai-27-feb-2026)
 17. [Appendice H — Fix S04 Flusso Invito Utenti (2 Mar)](#appendice-h--fix-s04-flusso-invito-utenti-2-mar-2026)
+18. [Appendice I — Verifica Fix S02 JWT Exposure (2 Mar)](#appendice-i--verifica-fix-s02-jwt-exposure-2-mar-2026)
 
 ---
 
@@ -1339,6 +1340,86 @@ class TestChangePassword:
 
 ---
 
+## APPENDICE I — VERIFICA FIX S02 JWT EXPOSURE (2 Mar 2026)
+
+### Problema Originale
+
+Il token JWT era salvato in `localStorage`, rendendolo accessibile a JavaScript e vulnerabile ad attacchi XSS. Un eventuale script malevolo poteva leggere il token e impersonare l'utente.
+
+### Soluzione Implementata (già in produzione)
+
+Il fix era già stato implementato in una sessione precedente. La verifica ha confermato che:
+
+#### 1. Frontend - api.js
+```javascript
+// Nessun header Authorization
+// Solo credentials: 'include' per inviare il cookie
+const response = await window.fetch(`${API_URL}${endpoint}`, {
+    ...options,
+    headers,
+    credentials: 'include',  // Send HttpOnly cookies
+});
+```
+
+#### 2. Frontend - AuthContext.js
+```javascript
+// Nessun localStorage per il token
+// Autenticazione basata solo su GET /api/auth/me
+const checkAuth = useCallback(async () => {
+    try {
+        const userData = await api.get('/api/auth/me');
+        setUser(userData);
+    } catch {
+        setUser(null);
+    }
+}, []);
+```
+
+#### 3. Backend - Cookie HttpOnly
+```python
+# routes/auth.py
+response.set_cookie(
+    key="session_token", value=token,
+    httponly=True,      # Non accessibile da JavaScript
+    secure=True,        # Solo HTTPS
+    samesite="none",    # Cross-origin (necessario per preview)
+    max_age=7 * 24 * 3600
+)
+```
+
+### Verifica Eseguita
+
+| Test | Risultato | Dettaglio |
+|------|-----------|-----------|
+| `localStorage.getItem('token')` dopo login | `None` | Nessun token salvato |
+| Login → Dashboard | ✅ | Cookie impostato correttamente |
+| Refresh pagina | ✅ | Sessione persistente via cookie |
+| Logout → Landing | ✅ | Cookie cancellato, redirect corretto |
+| Route protetta senza auth | ✅ | Redirect a /login |
+| 36/36 test backend | ✅ | Nessuna regressione |
+
+### Ricerca nel Codebase
+
+```bash
+# Nessun riferimento a localStorage per token
+grep -rn "localStorage" frontend/src/ --include="*.js" | grep -v "theme"
+# Solo commento: "// Check auth via HttpOnly cookie (no localStorage)"
+
+# Nessun header Authorization
+grep -rn "Authorization" frontend/src/ --include="*.js"
+# Nessun risultato
+
+# Nessun Bearer token
+grep -rn "Bearer" frontend/src/ --include="*.js"
+# Nessun risultato
+```
+
+### Conclusione
+
+Il fix S02 è **completo e verificato**. L'autenticazione è basata esclusivamente sul cookie HttpOnly `session_token`, eliminando completamente il rischio di esposizione del token tramite XSS.
+
+---
+
 *Documento generato il 18 Febbraio 2026*  
 *Aggiornato con Fix 1–6 applicati il 18 Febbraio 2026*  
 *Aggiornato con Refactoring Strutturale il 19 Febbraio 2026*
@@ -1348,4 +1429,5 @@ class TestChangePassword:
 *Aggiornato con Fix Debito Tecnico S04/S02/D09 il 20 Febbraio 2026*
 *Aggiornato con Post-Mortem Errori Agente il 27 Febbraio 2026*
 *Aggiornato con Fix S04 Flusso Invito Utenti il 2 Marzo 2026*
+*Aggiornato con Verifica Fix S02 JWT Exposure il 2 Marzo 2026*
 *Basato su lettura completa del codice sorgente, schema MongoDB live, test report e configurazioni.*
