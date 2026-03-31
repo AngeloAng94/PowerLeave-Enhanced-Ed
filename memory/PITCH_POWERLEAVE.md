@@ -66,6 +66,7 @@ Per chi vuole approfondire il lato tecnico:
 - **JWT HttpOnly cookies** — Autenticazione sicura
 - **bcrypt** — Hashing password
 - **slowapi** — Rate limiting anti-abuse
+- **litellm** — AI integration (GPT-4o-mini)
 
 ### Frontend
 - **React 18** — UI moderna e reattiva
@@ -76,7 +77,12 @@ Per chi vuole approfondire il lato tecnico:
 ### DevOps
 - **Docker** + **Docker Compose** — Containerizzazione
 - **Gunicorn** + **Uvicorn workers** — Production ready
-- **GitHub Actions** — CI/CD pipeline
+- **GitHub Actions** — CI/CD pipeline ✅ (100% green)
+
+### AI Features (Opzionali)
+- **Suggest Leave Type** — Suggerisce tipo assenza da note (GPT-4o-mini)
+- **Team Insights** — Analisi conflitti e capacità
+- **Monthly Report** — Riepilogo narrativo AI
 
 ---
 
@@ -86,12 +92,14 @@ Per chi vuole approfondire il lato tecnico:
 |---------|-----------|-----------|----------|-----------|
 | **Prezzo** | Free/Low-cost | €€€ | €€€€ | €€€ |
 | **Setup** | 5 minuti | Giorni | Settimane | Mesi |
+| **AI Features** | ✅ | ❌ | ❌ | ❌ |
 | **Open Source Ready** | ✅ | ❌ | ❌ | ❌ |
 | **Self-hosted** | ✅ | ❌ | ❌ | ❌ |
 | **No vendor lock-in** | ✅ | ❌ | ❌ | ❌ |
 | **Privacy GDPR nativa** | ✅ | ✅ | ✅ | ✅ |
 | **Italiano** | ✅ | Tradotto | Tradotto | ✅ |
 | **PMI-focused** | ✅ | Generico | Enterprise | Enterprise |
+| **CI/CD** | ✅ Green | ? | ? | ? |
 
 ### Perché scegliere PowerLeave?
 

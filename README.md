@@ -6,12 +6,13 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green?logo=fastapi)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)
 ![MongoDB](https://img.shields.io/badge/MongoDB-6.0-47A248?logo=mongodb)
+![CI](https://img.shields.io/badge/CI-passing-brightgreen?logo=github-actions)
 
 ---
 
 ## Descrizione
 
-PowerLeave è un sistema completo per la gestione delle ferie, permessi e assenze aziendali. Offre una dashboard intuitiva, approvazioni rapide, analytics avanzate e supporto multi-tenant per organizzazioni di qualsiasi dimensione.
+PowerLeave è un sistema completo per la gestione delle ferie, permessi e assenze aziendali. Offre una dashboard intuitiva, approvazioni rapide, analytics avanzate con grafici interattivi, AI-powered suggestions e supporto multi-tenant per organizzazioni di qualsiasi dimensione.
 
 ---
 
@@ -22,9 +23,11 @@ PowerLeave è un sistema completo per la gestione delle ferie, permessi e assenz
 | Backend | FastAPI (Python) | 3.11 |
 | Database | MongoDB | 6.0 |
 | Frontend | React | 18.x |
-| Autenticazione | JWT | - |
+| Grafici | Recharts | 2.x |
+| AI | litellm + GPT-4o-mini | - |
+| Autenticazione | JWT (HttpOnly Cookie) | - |
 | Styling | Tailwind CSS | 3.x |
-| CI/CD | GitHub Actions | - |
+| CI/CD | GitHub Actions | ✅ |
 
 ---
 
@@ -36,9 +39,25 @@ PowerLeave è un sistema completo per la gestione delle ferie, permessi e assenz
 - **Calendario**: Visualizzazione mensile delle assenze del team
 - **Chiusure Aziendali**: Gestione festività e chiusure con sistema deroghe
 - **Bacheca Annunci**: Comunicazioni interne per il team
-- **Analytics**: Dashboard con statistiche e trend
+- **Analytics**: Dashboard con grafici Recharts interattivi
+- **Export CSV**: Esportazione report richieste e statistiche
+- **AI Suggestions**: Suggerimento automatico tipo assenza basato sulle note (GPT-4o-mini)
+- **AI Insights**: Analisi team, conflitti, capacità settimanale
+- **AI Monthly Report**: Riepilogo narrativo mensile generato da AI
 - **Multi-tenant**: Supporto per più organizzazioni
 - **Dark/Light Mode**: Tema personalizzabile
+
+---
+
+## CI/CD Status
+
+✅ **GitHub Actions: Backend + Frontend PASSING**
+
+La pipeline CI verifica:
+- Lint Python (ruff)
+- Test suite backend (pytest, 36+ test)
+- Build frontend (React)
+- Lockfile integrity (yarn.lock)
 
 ---
 
@@ -48,27 +67,37 @@ PowerLeave è un sistema completo per la gestione delle ferie, permessi e assenz
 powerleave/
 ├── backend/
 │   ├── server.py          # Entry point FastAPI
-│   ├── config.py          # Configurazione
 │   ├── models.py          # Modelli Pydantic
 │   ├── auth.py            # Autenticazione JWT
 │   ├── database.py        # Connessione MongoDB
+│   ├── ai_service.py      # AI features (litellm)
+│   ├── email_service.py   # Email SendGrid (opzionale)
 │   ├── seed.py            # Dati demo
 │   ├── routes/            # API endpoints
 │   │   ├── auth.py
 │   │   ├── leave.py
 │   │   ├── team.py
+│   │   ├── ai.py          # AI endpoints
 │   │   └── ...
-│   ├── tests/             # Test suite
+│   ├── tests/             # Test suite (36+ test)
+│   ├── requirements.txt
 │   └── Dockerfile
 ├── frontend/
 │   ├── src/
 │   │   ├── App.js
 │   │   ├── pages/         # Componenti pagina
 │   │   ├── components/    # Componenti riutilizzabili
+│   │   │   ├── AIInsightsWidget.js
+│   │   │   ├── AILeaveTypeSuggestion.js
+│   │   │   ├── AIMonthlyReport.js
+│   │   │   └── ...
 │   │   └── context/       # React Context
+│   ├── package.json
+│   ├── yarn.lock          # ✅ Committato
 │   └── Dockerfile
 ├── docker-compose.yml
 ├── .env.example
+├── .github/workflows/ci.yml
 └── README.md
 ```
 
@@ -120,6 +149,9 @@ export MONGO_URL="mongodb://localhost:27017"
 export DB_NAME="powerleave"
 export SECRET_KEY="your-secret-key-min-32-chars"
 
+# (Opzionale) Per AI features
+export OPENAI_API_KEY="sk-..."
+
 # Avvia il server
 uvicorn server:app --host 0.0.0.0 --port 8001 --reload
 ```
@@ -138,6 +170,34 @@ echo "REACT_APP_BACKEND_URL=http://localhost:8001" > .env
 # Avvia in development
 yarn start
 ```
+
+---
+
+## Configurazione AI (Opzionale)
+
+PowerLeave include funzionalità AI opzionali powered by GPT-4o-mini:
+
+| Feature | Descrizione |
+|---------|-------------|
+| **Suggest Leave Type** | Suggerisce il tipo di assenza basato sulle note |
+| **Team Insights** | Analisi conflitti, capacità, dipendenti a rischio |
+| **Monthly Report** | Riepilogo narrativo mensile generato da AI |
+
+### Configurazione
+
+**Su piattaforma Emergent:**
+```bash
+# Automatico - usa EMERGENT_LLM_KEY
+```
+
+**Su ambienti esterni (AWS, Azure, Railway, Render, ecc.):**
+```bash
+# backend/.env
+OPENAI_API_KEY=sk-your-openai-api-key
+```
+
+**Senza chiave AI:**
+Le funzionalità AI vengono disabilitate silenziosamente. Il resto dell'applicazione funziona normalmente.
 
 ---
 
@@ -162,8 +222,31 @@ cd backend
 # Esegui tutti i test
 pytest tests/test_powerleave_api.py -v
 
-# Esegui test con coverage
-pytest tests/ --cov=. --cov-report=html
+# Risultato atteso: 36 passed ✅
+```
+
+---
+
+## Deploy
+
+PowerLeave è deployabile su qualsiasi ambiente cloud standard:
+
+| Provider | Supportato |
+|----------|------------|
+| AWS (ECS, EKS) | ✅ |
+| Azure (Container Apps) | ✅ |
+| Google Cloud Run | ✅ |
+| Railway | ✅ |
+| Render | ✅ |
+| DigitalOcean App Platform | ✅ |
+| Self-hosted (Docker) | ✅ |
+
+### Produzione con Gunicorn
+
+Il Dockerfile backend usa Gunicorn con 4 workers per produzione:
+
+```dockerfile
+CMD ["gunicorn", "server:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8001"]
 ```
 
 ---
@@ -174,12 +257,26 @@ La documentazione OpenAPI è disponibile su:
 - **Swagger UI**: `http://localhost:8001/docs`
 - **ReDoc**: `http://localhost:8001/redoc`
 
+### Endpoint AI
+
+| Endpoint | Metodo | Descrizione |
+|----------|--------|-------------|
+| `/api/ai/status` | GET | Verifica se AI è abilitato |
+| `/api/ai/suggest-leave-type` | POST | Suggerisce tipo assenza |
+| `/api/ai/team-insights` | GET | Insights team (admin) |
+| `/api/ai/monthly-report/{year}/{month}` | GET | Report mensile AI (admin) |
+
 ---
 
 ## Documentazione Tecnica
 
 Per dettagli sull'architettura, debito tecnico e roadmap di sviluppo, consulta:
 - [`AUDIT_TECNICO_POWERLEAVE_v2.md`](./AUDIT_TECNICO_POWERLEAVE_v2.md)
+
+Per documentazione commerciale:
+- [`memory/PITCH_POWERLEAVE.md`](./memory/PITCH_POWERLEAVE.md)
+- [`memory/MANUALE_UTENTE.md`](./memory/MANUALE_UTENTE.md)
+- [`memory/MANUALE_ADMIN.md`](./memory/MANUALE_ADMIN.md)
 
 ---
 

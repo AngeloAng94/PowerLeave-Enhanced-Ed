@@ -19,7 +19,7 @@ Sistema di gestione ferie per aziende italiane con design moderno, configurabile
 
 ## What's Been Implemented
 
-### Session 10 - 31 Mar 2026 (Production Ready + Commercial + AI)
+### Session 10 - 31 Mar 2026 (Production Ready + Commercial + AI + CI/CD Green)
 - **Grafici Recharts** - BarChart (12 mesi), PieChart (distribuzione tipo), AreaChart (trend cumulativo)
 - **Export CSV** - Pulsante in StatsPage e RequestsPage con export frontend-only
 - **Email SendGrid** - Modulo email_service.py con send_invite_email e send_leave_status_email
@@ -30,8 +30,13 @@ Sistema di gestione ferie per aziende italiane con design moderno, configurabile
   - POST /api/ai/suggest-leave-type: suggerimento tipo assenza basato su note
   - GET /api/ai/team-insights: analisi locale conflitti, capacità, rischi
   - GET /api/ai/monthly-report: report narrativo mensile generato da AI
-- **Audit Tecnico aggiornato** - Appendice M (Production Ready)
-- **Test**: 36/36 backend passed + UI verificata con screenshot
+- **AI Refactoring**: emergentintegrations → litellm per compatibilità universale
+- **Dual-Mode AI**: EMERGENT_LLM_KEY (Emergent) o OPENAI_API_KEY (esterni)
+- **CI/CD GREEN**: Prima volta dopo 18 run falliti! Backend + Frontend passing
+- **yarn.lock committato**: Risolto problema build frontend
+- **Deploy Ready**: Compatibile con AWS, Azure, Railway, Render, ecc.
+- **Audit Tecnico aggiornato** - Appendice M (Production Ready) + Appendice N (CI/CD Green)
+- **Test**: 36/36 backend passed
 
 ### Session 9 - 27 Feb / 2 Mar 2026 (Bug Fix + S04/S02 Verification)
 - **FIX CRITICO: Dashboard crash risolto** - Variabile `currentPage` non definita sostituita con `section`

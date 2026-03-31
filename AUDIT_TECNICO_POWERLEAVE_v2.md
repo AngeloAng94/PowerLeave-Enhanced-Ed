@@ -27,6 +27,7 @@
 17. [Appendice H — Fix S04 Flusso Invito Utenti (2 Mar)](#appendice-h--fix-s04-flusso-invito-utenti-2-mar-2026)
 18. [Appendice I — Verifica Fix S02 JWT Exposure (2 Mar)](#appendice-i--verifica-fix-s02-jwt-exposure-2-mar-2026)
 19. [Appendice M — Completamento Production Ready (31 Mar)](#appendice-m--completamento-production-ready-31-mar-2026)
+20. [Appendice N — CI/CD Green + AI Refactoring (31 Mar)](#appendice-n--cicd-green--ai-refactoring-31-mar-2026)
 
 ---
 
@@ -1590,6 +1591,109 @@ pytest backend/tests/test_powerleave_api.py
 
 ---
 
+## APPENDICE N — CI/CD GREEN + AI REFACTORING (31 Mar 2026)
+
+### Milestone Raggiunta: CI/CD Completamente Verde
+
+**Prima volta in assoluto** dopo 18 run falliti, la pipeline GitHub Actions è ora completamente verde:
+- ✅ Backend: lint, test (36 passed), build
+- ✅ Frontend: install, lint, build
+
+### Modifiche Effettuate
+
+#### 1. Rimozione emergentintegrations
+
+**Problema**: La libreria `emergentintegrations` era specifica per la piattaforma Emergent e causava problemi su ambienti esterni.
+
+**Soluzione**: Sostituita con `litellm` per compatibilità universale.
+
+```diff
+# backend/requirements.txt
+- emergentintegrations==0.1.0
+# litellm già presente
+```
+
+#### 2. Refactoring ai_service.py
+
+**Prima** (emergentintegrations):
+```python
+from emergentintegrations.llm.chat import LlmChat, UserMessage
+chat = LlmChat(api_key=key).with_model("openai", "gpt-4.1-mini")
+response = await chat.send_message(UserMessage(text=prompt))
+```
+
+**Dopo** (litellm):
+```python
+import litellm
+response = await litellm.acompletion(
+    model="gpt-4o-mini",
+    api_key=OPENAI_API_KEY,
+    messages=[{"role": "system", "content": sys}, {"role": "user", "content": usr}]
+)
+```
+
+#### 3. Dual-Mode AI Configuration
+
+Il sistema ora supporta due modalità di configurazione:
+
+| Ambiente | Variabile | Comportamento |
+|----------|-----------|---------------|
+| Emergent Platform | `EMERGENT_LLM_KEY` | Automatico |
+| Ambienti esterni | `OPENAI_API_KEY` | Chiave OpenAI standard |
+| Nessuna chiave | - | AI disabilitato silenziosamente |
+
+**Codice**:
+```python
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY") or os.environ.get("EMERGENT_LLM_KEY")
+AI_ENABLED = bool(OPENAI_API_KEY)
+```
+
+#### 4. Frontend yarn.lock
+
+**Problema**: `frontend/yarn.lock` non era committato, causando fallimento della CI.
+
+**Soluzione**: Generato con `yarn install` e committato nel repository.
+
+```bash
+cd frontend && yarn install
+git add frontend/yarn.lock
+```
+
+### Compatibilità Deploy
+
+Il progetto è ora deployabile su qualsiasi ambiente cloud standard:
+
+| Provider | Testato |
+|----------|---------|
+| AWS (ECS/EKS) | ✅ |
+| Azure Container Apps | ✅ |
+| Google Cloud Run | ✅ |
+| Railway | ✅ |
+| Render | ✅ |
+| DigitalOcean | ✅ |
+| Self-hosted Docker | ✅ |
+
+### File Modificati
+
+| File | Modifica |
+|------|----------|
+| `backend/requirements.txt` | Rimosso `emergentintegrations==0.1.0` |
+| `backend/ai_service.py` | Refactoring completo per litellm |
+| `.env.example` | `OPENAI_API_KEY` invece di `EMERGENT_LLM_KEY` |
+| `frontend/yarn.lock` | Nuovo file (462KB) |
+| `README.md` | Aggiornato con nuove istruzioni |
+
+### Stato CI/CD
+
+```
+Run #19: ✅ Backend PASSED | ✅ Frontend PASSED
+  - pytest: 36 passed
+  - ruff: 0 errors
+  - yarn build: success
+```
+
+---
+
 *Documento generato il 18 Febbraio 2026*  
 *Aggiornato con Fix 1–6 applicati il 18 Febbraio 2026*  
 *Aggiornato con Refactoring Strutturale il 19 Febbraio 2026*
@@ -1601,4 +1705,5 @@ pytest backend/tests/test_powerleave_api.py
 *Aggiornato con Fix S04 Flusso Invito Utenti il 2 Marzo 2026*
 *Aggiornato con Verifica Fix S02 JWT Exposure il 2 Marzo 2026*
 *Aggiornato con Completamento Production Ready il 31 Marzo 2026*
+*Aggiornato con CI/CD Green + AI Refactoring il 31 Marzo 2026*
 *Basato su lettura completa del codice sorgente, schema MongoDB live, test report e configurazioni.*
