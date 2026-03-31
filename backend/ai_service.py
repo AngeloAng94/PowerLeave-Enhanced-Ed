@@ -1,29 +1,52 @@
 """
 PowerLeave AI Service
-Provides AI-powered features using OpenAI GPT-4o-mini.
-If EMERGENT_LLM_KEY is not configured, features are disabled silently.
+Provides AI-powered features using OpenAI GPT-4o-mini via litellm.
+If OPENAI_API_KEY is not configured, features are disabled silently.
 """
 
 import os
+import json
 import logging
 from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any, List
 
 logger = logging.getLogger(__name__)
 
-# Check if AI is enabled
-EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
-AI_ENABLED = bool(EMERGENT_LLM_KEY)
+# Check if AI is enabled - supports both OPENAI_API_KEY and EMERGENT_LLM_KEY
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY") or os.environ.get("EMERGENT_LLM_KEY")
+AI_ENABLED = bool(OPENAI_API_KEY)
 
 if AI_ENABLED:
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
-        logger.info("AI service initialized with Emergent LLM key")
+        import litellm
+        logger.info("AI service initialized with litellm")
     except ImportError:
         AI_ENABLED = False
-        logger.warning("emergentintegrations not installed - AI features disabled")
+        logger.warning("litellm not installed - AI features disabled")
 else:
-    logger.info("EMERGENT_LLM_KEY not configured - AI features disabled")
+    logger.info("OPENAI_API_KEY not configured - AI features disabled")
+
+
+async def _call_llm(system_message: str, user_message: str) -> Optional[str]:
+    """Helper to call LLM via litellm."""
+    if not AI_ENABLED:
+        return None
+    try:
+        import litellm
+        response = await litellm.acompletion(
+            model="gpt-4o-mini",
+            api_key=OPENAI_API_KEY,
+            messages=[
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": user_message}
+            ],
+            max_tokens=500,
+            temperature=0.7
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        logger.error(f"LLM call error: {str(e)}")
+        return None
 
 
 async def suggest_leave_type(notes: str, leave_types: List[Dict]) -> Optional[Dict[str, Any]]:
@@ -35,31 +58,24 @@ async def suggest_leave_type(notes: str, leave_types: List[Dict]) -> Optional[Di
         return None
     
     try:
-        # Format leave types for the prompt
         types_list = ", ".join([t.get("name", t.get("id")) for t in leave_types])
         
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"leave-suggest-{datetime.now().timestamp()}",
-            system_message="""Sei un assistente HR italiano. Analizza le note di una richiesta di assenza e suggerisci il tipo più appropriato.
+        system_message = """Sei un assistente HR italiano. Analizza le note di una richiesta di assenza e suggerisci il tipo più appropriato.
 Rispondi SOLO in formato JSON con questa struttura esatta:
 {"tipo": "nome_tipo", "confidence": 0.0-1.0, "motivo": "breve spiegazione"}
 Non aggiungere altro testo."""
-        ).with_model("openai", "gpt-4.1-mini")
         
-        user_message = UserMessage(
-            text=f"""Tipi di assenza disponibili: {types_list}
+        user_message = f"""Tipi di assenza disponibili: {types_list}
 
 Note dell'utente: "{notes}"
 
 Quale tipo di assenza è più appropriato?"""
-        )
         
-        response = await chat.send_message(user_message)
+        response = await _call_llm(system_message, user_message)
+        if not response:
+            return None
         
         # Parse JSON response
-        import json
-        # Clean response - remove markdown if present
         response_text = response.strip()
         if response_text.startswith("```"):
             response_text = response_text.split("```")[1]
@@ -78,7 +94,6 @@ Quale tipo di assenza è più appropriato?"""
                 break
         
         if not suggested_type:
-            # Default to first matching word
             for lt in leave_types:
                 if lt.get("name", "").lower() in suggested_name or suggested_name in lt.get("name", "").lower():
                     suggested_type = lt
@@ -114,13 +129,11 @@ async def generate_monthly_report(
         return None
     
     try:
-        # Prepare stats summary
         total_requests = len(requests)
         approved = len([r for r in requests if r.get("status") == "approved"])
         pending = len([r for r in requests if r.get("status") == "pending"])
         rejected = len([r for r in requests if r.get("status") == "rejected"])
         
-        # Group by type
         type_counts = {}
         total_days = 0
         for r in requests:
@@ -135,15 +148,10 @@ async def generate_monthly_report(
                        "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"]
         month_name = month_names[month] if 1 <= month <= 12 else str(month)
         
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"monthly-report-{year}-{month}",
-            system_message="""Sei un analista HR italiano. Scrivi un breve paragrafo (3-4 frasi) che riassume l'attività mensile delle assenze.
+        system_message = """Sei un analista HR italiano. Scrivi un breve paragrafo (3-4 frasi) che riassume l'attività mensile delle assenze.
 Tono professionale ma accessibile. Non usare elenchi puntati, solo prosa fluida."""
-        ).with_model("openai", "gpt-4.1-mini")
         
-        user_message = UserMessage(
-            text=f"""Mese: {month_name} {year}
+        user_message = f"""Mese: {month_name} {year}
 Totale richieste: {total_requests}
 Approvate: {approved}, In attesa: {pending}, Rifiutate: {rejected}
 Giorni totali approvati: {total_days}
@@ -151,10 +159,9 @@ Distribuzione: {types_summary if types_summary else "nessuna richiesta"}
 Tasso utilizzo ferie: {stats.get('utilization_rate', 0)}%
 
 Scrivi un breve riepilogo narrativo del mese."""
-        )
         
-        response = await chat.send_message(user_message)
-        return response.strip()
+        response = await _call_llm(system_message, user_message)
+        return response.strip() if response else None
         
     except Exception as e:
         logger.error(f"AI generate_monthly_report error: {str(e)}")
@@ -183,11 +190,9 @@ def analyze_team_insights(
     week_start = today - timedelta(days=today.weekday())
     week_end = week_start + timedelta(days=6)
     
-    # Get approved requests
     approved_requests = [r for r in requests if r.get("status") == "approved"]
     pending_requests = [r for r in requests if r.get("status") == "pending"]
     
-    # Analyze week capacity
     total_users = len(users)
     absent_this_week = set()
     
@@ -195,8 +200,6 @@ def analyze_team_insights(
         try:
             start = datetime.strptime(req.get("start_date", ""), "%Y-%m-%d").date()
             end = datetime.strptime(req.get("end_date", ""), "%Y-%m-%d").date()
-            
-            # Check if overlaps with current week
             if start <= week_end and end >= week_start:
                 absent_this_week.add(req.get("user_id"))
         except:
@@ -209,7 +212,6 @@ def analyze_team_insights(
         "percentage": round((total_users - len(absent_this_week)) / max(1, total_users) * 100)
     }
     
-    # Check for conflicts (overlapping requests from multiple users)
     conflicts = []
     date_coverage = {}
     
@@ -217,7 +219,6 @@ def analyze_team_insights(
         try:
             start = datetime.strptime(req.get("start_date", ""), "%Y-%m-%d").date()
             end = datetime.strptime(req.get("end_date", ""), "%Y-%m-%d").date()
-            
             current = start
             while current <= end:
                 date_str = current.strftime("%Y-%m-%d")
@@ -233,12 +234,11 @@ def analyze_team_insights(
         except:
             pass
     
-    # Find dates with high absence
     for date_str, users_absent in date_coverage.items():
-        if len(users_absent) >= max(2, total_users // 2):  # 50% or more absent
+        if len(users_absent) >= max(2, total_users // 2):
             try:
                 date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
-                if date_obj >= today:  # Only future conflicts
+                if date_obj >= today:
                     conflicts.append({
                         "date": date_str,
                         "count": len(users_absent),
@@ -248,11 +248,9 @@ def analyze_team_insights(
             except:
                 pass
     
-    # Sort and limit conflicts
     conflicts.sort(key=lambda x: x["date"])
     insights["conflicts"] = conflicts[:5]
     
-    # Analyze employees at risk of exhausting leave
     year = today.year
     for user in users:
         user_id = user.get("user_id")
@@ -263,15 +261,12 @@ def analyze_team_insights(
                 total = bal.get("total_days", 26)
                 used = bal.get("used_days", 0)
                 remaining = total - used
-                usage_percent = (used / max(1, total)) * 100
                 
-                # Calculate pending days for this user
                 pending_days = sum([
                     r.get("days", 0) for r in pending_requests 
                     if r.get("user_id") == user_id and r.get("leave_type_id") == "ferie"
                 ])
                 
-                # Risk if less than 20% remaining or will exhaust with pending
                 if remaining <= total * 0.2 or remaining - pending_days <= 0:
                     insights["risk_employees"].append({
                         "user_name": user.get("name"),
@@ -281,11 +276,9 @@ def analyze_team_insights(
                         "risk_level": "high" if remaining <= 3 else "medium"
                     })
     
-    # Sort by risk
     insights["risk_employees"].sort(key=lambda x: x["remaining_days"])
     insights["risk_employees"] = insights["risk_employees"][:5]
     
-    # Generate recommendations
     if insights["week_capacity"]["percentage"] < 50:
         insights["recommendations"].append({
             "type": "capacity",
