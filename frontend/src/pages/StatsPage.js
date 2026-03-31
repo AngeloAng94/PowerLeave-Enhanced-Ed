@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import api from '../lib/api';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
   LineChart, Line, Area, AreaChart
 } from 'recharts';
+
+// Lazy load AI Monthly Report
+const AIMonthlyReport = lazy(() => import('../components/AIMonthlyReport'));
 
 export default function StatsPage() {
   const [stats, setStats] = useState(null);
@@ -62,9 +65,13 @@ export default function StatsPage() {
   const pending = requests.filter(r => r.status === 'pending');
   const rejected = requests.filter(r => r.status === 'rejected');
 
+  // Current month/year for AI report
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+
   // Monthly data (12 months)
   const monthlyData = [];
-  const now = new Date();
   for (let i = 11; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -152,6 +159,11 @@ export default function StatsPage() {
           </div>
         ))}
       </div>
+
+      {/* AI Monthly Report */}
+      <Suspense fallback={null}>
+        <AIMonthlyReport year={currentYear} month={currentMonth} />
+      </Suspense>
 
       {/* Charts Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px', marginBottom: '24px' }}>

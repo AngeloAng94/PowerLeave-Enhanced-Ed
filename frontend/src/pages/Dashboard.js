@@ -8,6 +8,7 @@ import ThemeToggle from '../components/ThemeToggle';
 import DashboardContent from './DashboardContent';
 import RequestsPage from './RequestsPage';
 import TeamPage from './TeamPage';
+import AIInsightsWidget from '../components/AIInsightsWidget';
 
 // Lazy-loaded pages
 const StatsPage = lazy(() => import('./StatsPage'));
@@ -262,6 +263,9 @@ export default function Dashboard({ section = 'dashboard' }) {
 function RequestModal({ leaveTypes, onSubmit, onClose }) {
   const [form, setForm] = useState({ leave_type_id: leaveTypes[0]?.id || '', start_date: '', end_date: '', hours: 8, notes: '' });
   const [error, setError] = useState('');
+  
+  // Lazy import AI suggestion component
+  const AILeaveTypeSuggestion = React.lazy(() => import('../components/AILeaveTypeSuggestion'));
 
   // Calculate date constraints
   const today = new Date().toISOString().split('T')[0];
@@ -378,6 +382,13 @@ function RequestModal({ leaveTypes, onSubmit, onClose }) {
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '4px', color: 'var(--foreground)' }}>Note</label>
             <textarea data-testid="request-notes" value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} rows={3} placeholder="Motivo della richiesta..." style={{...inputStyle, resize: 'vertical'}} />
+            <Suspense fallback={null}>
+              <AILeaveTypeSuggestion 
+                notes={form.notes} 
+                leaveTypes={leaveTypes}
+                onSelect={(typeId) => setForm({...form, leave_type_id: typeId})}
+              />
+            </Suspense>
           </div>
           <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
             <button type="button" onClick={onClose} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--muted)', color: 'var(--foreground)', cursor: 'pointer', fontSize: '13px' }}>Annulla</button>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import MiniCalendar from '../components/MiniCalendar';
 import { Icons } from '../components/Icons';
+import AIInsightsWidget from '../components/AIInsightsWidget';
 
 export default function DashboardContent({ stats, pendingRequests = [], leaveTypes = [], balances = [], allRequests = [], team = [], user, onReview, onCreateRequest, onRefresh }) {
   const [inlineForm, setInlineForm] = useState({ leave_type_id: '', start_date: '', end_date: '', hours: 8, notes: '' });
@@ -32,6 +33,9 @@ export default function DashboardContent({ stats, pendingRequests = [], leaveTyp
 
   return (
     <div data-testid="dashboard-content">
+      {/* AI Insights Widget (Admin only) */}
+      {user?.role === 'admin' && <AIInsightsWidget />}
+
       {/* Stats Cards */}
       {stats && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>

@@ -22,6 +22,7 @@ from routes.team import router as team_router
 from routes.organization import router as organization_router
 from routes.announcements import router as announcements_router
 from routes.closures import router as closures_router
+from routes.ai import router as ai_router
 
 
 @asynccontextmanager
@@ -64,6 +65,7 @@ app.include_router(team_router)
 app.include_router(organization_router)
 app.include_router(announcements_router)
 app.include_router(closures_router)
+app.include_router(ai_router)
 
 
 @app.get("/api/health")

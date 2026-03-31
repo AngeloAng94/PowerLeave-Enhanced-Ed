@@ -19,13 +19,17 @@ Sistema di gestione ferie per aziende italiane con design moderno, configurabile
 
 ## What's Been Implemented
 
-### Session 10 - 31 Mar 2026 (Production Ready + Commercial)
+### Session 10 - 31 Mar 2026 (Production Ready + Commercial + AI)
 - **Grafici Recharts** - BarChart (12 mesi), PieChart (distribuzione tipo), AreaChart (trend cumulativo)
 - **Export CSV** - Pulsante in StatsPage e RequestsPage con export frontend-only
 - **Email SendGrid** - Modulo email_service.py con send_invite_email e send_leave_status_email
 - **Multi-worker Docker** - Gunicorn con 4 workers UvicornWorker
 - **Landing Page Commerciale** - Hero, Use Cases, Features, FAQ, Footer professionale
 - **Documentazione Commerciale** - PITCH_POWERLEAVE.md, MANUALE_UTENTE.md, MANUALE_ADMIN.md
+- **AI Layer con GPT-4o-mini**:
+  - POST /api/ai/suggest-leave-type: suggerimento tipo assenza basato su note
+  - GET /api/ai/team-insights: analisi locale conflitti, capacità, rischi
+  - GET /api/ai/monthly-report: report narrativo mensile generato da AI
 - **Audit Tecnico aggiornato** - Appendice M (Production Ready)
 - **Test**: 36/36 backend passed + UI verificata con screenshot
 
@@ -92,6 +96,12 @@ frontend/src/ (20+ file)
 - [x] ~~Multi-worker Gunicorn~~ ✅
 - [x] ~~Landing Page Commerciale~~ ✅
 - [x] ~~Documentazione Commerciale~~ ✅
+- [x] ~~AI Layer (GPT-4o-mini)~~ ✅
+
+## AI Features
+- `POST /api/ai/suggest-leave-type` - Suggerisce tipo assenza dalle note
+- `GET /api/ai/team-insights` - Analisi locale team (conflitti, capacità, rischi)
+- `GET /api/ai/monthly-report/{year}/{month}` - Report narrativo AI
 
 ## Upcoming Tasks (P1)
 - [ ] Test Docker setup (docker-compose up)
