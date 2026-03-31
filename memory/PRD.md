@@ -19,6 +19,16 @@ Sistema di gestione ferie per aziende italiane con design moderno, configurabile
 
 ## What's Been Implemented
 
+### Session 10 - 31 Mar 2026 (Production Ready + Commercial)
+- **Grafici Recharts** - BarChart (12 mesi), PieChart (distribuzione tipo), AreaChart (trend cumulativo)
+- **Export CSV** - Pulsante in StatsPage e RequestsPage con export frontend-only
+- **Email SendGrid** - Modulo email_service.py con send_invite_email e send_leave_status_email
+- **Multi-worker Docker** - Gunicorn con 4 workers UvicornWorker
+- **Landing Page Commerciale** - Hero, Use Cases, Features, FAQ, Footer professionale
+- **Documentazione Commerciale** - PITCH_POWERLEAVE.md, MANUALE_UTENTE.md, MANUALE_ADMIN.md
+- **Audit Tecnico aggiornato** - Appendice M (Production Ready)
+- **Test**: 36/36 backend passed + UI verificata con screenshot
+
 ### Session 9 - 27 Feb / 2 Mar 2026 (Bug Fix + S04/S02 Verification)
 - **FIX CRITICO: Dashboard crash risolto** - Variabile `currentPage` non definita sostituita con `section`
 - **Verifica S04 completa** - Flusso invito utenti già implementato e funzionante
@@ -76,18 +86,27 @@ frontend/src/ (20+ file)
 
 ## Next Tasks (P0)
 - [x] ~~Dashboard crash fix (currentPage → section)~~ ✅
-- [x] ~~Aggiungere `response_model` agli endpoint FastAPI (D04)~~ ✅
-- [x] ~~Helper centralizzato init_leave_balances (D08)~~ ✅ (già presente)
+- [x] ~~Grafici Recharts~~ ✅
+- [x] ~~Export CSV~~ ✅
+- [x] ~~Email SendGrid (opzionale)~~ ✅
+- [x] ~~Multi-worker Gunicorn~~ ✅
+- [x] ~~Landing Page Commerciale~~ ✅
+- [x] ~~Documentazione Commerciale~~ ✅
 
 ## Upcoming Tasks (P1)
-- [x] ~~Dockerizzazione (Dockerfile + docker-compose)~~ ✅
-- [x] ~~README.md professionale~~ ✅
 - [ ] Test Docker setup (docker-compose up)
 - [ ] Verificare ZIP progetto con utente
 
 ## Future (P2-P3)
-- [ ] Google Calendar integration (on hold per utente)
-- [ ] Email notifications SendGrid (on hold per utente)
-- [ ] Export report, grafici recharts, PWA
+- [ ] Google Calendar integration
+- [ ] Outlook Calendar integration
+- [ ] App mobile (iOS/Android)
+- [ ] Notifiche push browser
 - [ ] Multi-livello approvazioni
-- [ ] Hardening: token rotation, Error Boundary, test frontend
+- [ ] API pubblica
+- [ ] White-label
+
+## Commercial Documentation
+- `/app/memory/PITCH_POWERLEAVE.md` - Mini pitch deck
+- `/app/memory/MANUALE_UTENTE.md` - Manuale dipendenti
+- `/app/memory/MANUALE_ADMIN.md` - Manuale amministratori
